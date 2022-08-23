@@ -44,20 +44,7 @@ async def inputentrance(websocket):
             except:
                 del user[websocket]
         except websockets.ConnectionClosedOK:
-            try:
-                for i in room:
-                    if user[websocket] in room[i]:
-                        room[i].remove(user[websocket])
-                        for o in user:
-                            if user[o] in room[i]:
-                                try:
-                                    response_str = str(user[websocket])[0:5] + ' 号用户离开了该房间'
-                                    response_str = gzip.compress(response_str.encode("utf-8"))
-                                    await o.send(response_str)
-                                except: print('离开报错')
-            except:pass
-            try:
-                del user[websocket]
+            try:del user[websocket]
             except:pass
             break
 async def msghandle(websocket,entrance):
@@ -68,9 +55,11 @@ async def msghandle(websocket,entrance):
                 if user[i] in room[entrance]:
                     try:recv_str = gzip.decompress(recv_str).decode()
                     except:pass
-                    response_str=str(user[websocket])[0:5] + ': ' + recv_str
-                    response_str = gzip.compress(response_str.encode("utf-8"))
-                    await i.send(response_str)
+                    try:
+                        response_str=str(user[websocket])[0:5] + ': ' + recv_str
+                        response_str = gzip.compress(response_str.encode("utf-8"))
+                        await i.send(response_str)
+                    except:pass
         except websockets.ConnectionClosedOK:
             try:del user[websocket]
             except:pass
@@ -100,7 +89,7 @@ async def Mainthread(websocket):
                                 if str(o.path) == '/0':
                                     response_str =str(user[websocket])[0:5] + ' 号用户离开了该房间'
                                 else:
-                                    response_str = 'User '+str(str(user[websocket]))[0:5]+' left the room'
+                                    response_str = 'User '+str(user[websocket])[0:5]+' left the room'
                                 response_str = gzip.compress(response_str.encode("utf-8"))
                                 await o.send(response_str)
                             except:print('离开报错')
@@ -114,6 +103,8 @@ if __name__ == '__main__':
     # ssl_context.load_cert_chain(r'localhost.pem')
     # start_server = websockets.serve(Mainthread, '0.0.0.0', 444,ssl=ssl_context)
 
+    # 取消上面注释 下面这行要注释掉
     start_server = websockets.serve(Mainthread, '0.0.0.0', 444)
+
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
